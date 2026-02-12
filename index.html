@@ -493,7 +493,7 @@
     <!-- Image View Modal -->
     <div id="image-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" onclick="closeImageModal()">
       <div class="relative max-w-4xl max-h-full">
-        <img id="modal-image" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl">
+        <img id="modal-image" class="max-w-full max-h-[80vh] rounded-2xl shadow-2xl" loading="lazy" onerror="this.style.background='#e5e7eb'; this.alt='Image unavailable';">
         <button onclick="closeImageModal()" class="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-colors">
           ✕
         </button>
@@ -503,45 +503,30 @@
   </div>
 
   <script>
-    // ============================================
-    // 🔥 Firebase Configuration
-    // ============================================
-    // ⚠️ สำคัญ: กรุณาใส่ Firebase Config ของคุณที่นี่
-    // วิธีรับ Config:
-    // 1. ไปที่ Firebase Console (https://console.firebase.google.com)
-    // 2. เลือก Project ของคุณ
-    // 3. ไปที่ Project Settings > General
-    // 4. เลื่อนลงไปหา "Your apps" > เลือก Web app
-    // 5. คัดลอก firebaseConfig มาวางแทนที่ด้านล่าง
-    
+    // Firebase Configuration
     const firebaseConfig = {
-      // ================================
-      // ⚠️ ใส่ Config ของคุณที่นี่ ⚠️
-      // ================================
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyCm9QsD6NwRF0zusMzgESEyA43hjEyHRhw",
+      authDomain: "sw-website-68.firebaseapp.com",
+      databaseURL: "https://sw-website-68-default-rtdb.firebaseio.com",
+      projectId: "sw-website-68",
+      storageBucket: "sw-website-68.firebasestorage.app",
+      messagingSenderId: "1008088788597",
+      appId: "1:1008088788597:web:28d2f983c552a118e9397c",
+      measurementId: "G-ESPPG76N3H"
     };
     
-    // Initialize Firebase
     let db = null;
     let unsubscribeRequests = null;
     
     try {
       firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
-      console.log('✅ Firebase connected successfully');
+      console.log('✅ Firebase เชื่อมต่อสำเร็จ');
     } catch (error) {
-      console.error('❌ Firebase connection error:', error);
+      console.error('❌ Firebase เชื่อมต่อผิดพลาด:', error);
       showToast('ไม่สามารถเชื่อมต่อ Firebase ได้ กรุณาตรวจสอบ Config', 'error');
     }
     
-    // ============================================
-    // 🎯 App State
-    // ============================================
     let currentUser = null;
     let currentUserType = null;
     let allRequests = [];
@@ -549,15 +534,11 @@
     let pendingRejectId = null;
     let compressedPhotoData = null;
     
-    // Teacher credentials (ง่ายๆ สำหรับ demo)
     const TEACHER_CREDENTIALS = {
       username: 'teacher',
       password: '1234'
     };
     
-    // ============================================
-    // 🔐 Authentication Functions
-    // ============================================
     function switchLoginType(type) {
       const studentForm = document.getElementById('student-login-form');
       const teacherForm = document.getElementById('teacher-login-form');
@@ -588,7 +569,7 @@
       }
       
       if (idCard.length !== 4) {
-        showToast('เลขบัตรประชาชนต้องมี 4 หลัก', 'error');
+        showToast('เลขบัตรประชาชนต้องมี 4 ตัวเลข', 'error');
         return;
       }
       
@@ -639,9 +620,6 @@
       showToast('ออกจากระบบแล้ว', 'info');
     }
     
-    // ============================================
-    // 📄 Page Navigation
-    // ============================================
     function showPage(page) {
       document.getElementById('login-page').classList.add('hidden');
       document.getElementById('student-page').classList.add('hidden');
@@ -676,9 +654,6 @@
       }
     }
     
-    // ============================================
-    // 📷 Photo Handling with Compression
-    // ============================================
     async function handlePhotoUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -738,9 +713,6 @@
       document.getElementById('photo-placeholder').classList.remove('hidden');
     }
     
-    // ============================================
-    // 📝 Leave Request Functions
-    // ============================================
     function setTodayDate() {
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('request-date').value = today;
@@ -794,9 +766,6 @@
       }
     }
     
-    // ============================================
-    // 📋 Student History
-    // ============================================
     function loadStudentHistory() {
       if (!db || !currentUser) return;
       
@@ -852,9 +821,6 @@
       }).join('');
     }
     
-    // ============================================
-    // 👨‍🏫 Teacher Functions
-    // ============================================
     function startRealtimeListener() {
       if (!db) {
         showToast('ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error');
@@ -873,7 +839,6 @@
           
           const currentPending = allRequests.filter(r => r.status === 'pending').length;
           
-          // แจ้งเตือนเมื่อมีคำขอใหม่
           if (currentPending > previousPending && previousPending > 0) {
             showToast('🔔 มีคำขอลาใหม่!', 'info');
             playNotificationSound();
@@ -897,7 +862,6 @@
       document.getElementById('stat-rejected').textContent = rejected;
       document.getElementById('stat-total').textContent = allRequests.length;
       
-      // Update notification badge
       const badge = document.getElementById('notification-badge');
       if (pending > 0) {
         badge.classList.remove('hidden');
@@ -910,7 +874,6 @@
     function filterRequests(filter) {
       currentFilter = filter;
       
-      // Update filter buttons
       ['all', 'pending', 'approved', 'rejected'].forEach(f => {
         const btn = document.getElementById(`filter-${f}`);
         if (f === filter) {
@@ -986,162 +949,4 @@
               </div>
             </div>
             
-            <div class="bg-gray-50 rounded-xl p-3 mb-4">
-              <p class="text-gray-500 text-xs mb-1">เหตุผล</p>
-              <p class="text-gray-800">${req.reason}</p>
-            </div>
-            
-            ${req.parentPhoto ? `
-              <div class="mb-4">
-                <p class="text-gray-500 text-xs mb-2">📸 รูปผู้ปกครอง</p>
-                <img src="${req.parentPhoto}" class="h-24 rounded-xl shadow-sm cursor-pointer hover:opacity-90 transition-opacity" onclick="viewImage('${req.parentPhoto}')" alt="รูปผู้ปกครอง" loading="lazy" onerror="this.style.background='#e5e7eb'; this.alt='Image unavailable';">
-              </div>
-            ` : ''}
-            
-            ${req.status === 'rejected' && req.rejectReason ? `
-              <div class="bg-red-50 rounded-xl p-3 mb-4 border border-red-200">
-                <p class="text-red-500 text-xs mb-1">❌ หมายเหตุการไม่อนุมัติ</p>
-                <p class="text-red-700">${req.rejectReason}</p>
-              </div>
-            ` : ''}
-            
-            ${req.status === 'pending' ? `
-              <div class="flex gap-3">
-                <button onclick="approveRequest('${req.id}')" class="flex-1 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-medium hover:shadow-lg transform hover:-translate-y-0.5 transition-all">
-                  ✅ อนุมัติ
-                </button>
-                <button onclick="openRejectModal('${req.id}')" class="flex-1 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-medium hover:shadow-lg transform hover:-translate-y-0.5 transition-all">
-                  ❌ ไม่อนุมัติ
-                </button>
-              </div>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
-    }
-    
-    async function approveRequest(id) {
-      if (!db) return;
-      
-      try {
-        await db.collection('leave_requests').doc(id).update({
-          status: 'approved',
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        showToast('อนุมัติคำขอเรียบร้อย! ✅', 'success');
-      } catch (error) {
-        console.error('Approve error:', error);
-        showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
-      }
-    }
-    
-    function openRejectModal(id) {
-      pendingRejectId = id;
-      document.getElementById('reject-reason').value = '';
-      document.getElementById('reject-modal').classList.remove('hidden');
-    }
-    
-    function closeRejectModal() {
-      pendingRejectId = null;
-      document.getElementById('reject-modal').classList.add('hidden');
-    }
-    
-    async function confirmReject() {
-      if (!db || !pendingRejectId) return;
-      
-      const reason = document.getElementById('reject-reason').value.trim();
-      if (!reason) {
-        showToast('กรุณาระบุเหตุผลที่ไม่อนุมัติ', 'error');
-        return;
-      }
-      
-      try {
-        await db.collection('leave_requests').doc(pendingRejectId).update({
-          status: 'rejected',
-          rejectReason: reason,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        closeRejectModal();
-        showToast('บันทึกการไม่อนุมัติเรียบร้อย', 'success');
-      } catch (error) {
-        console.error('Reject error:', error);
-        showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
-      }
-    }
-    
-    // ============================================
-    // 🖼️ Image Modal
-    // ============================================
-    function viewImage(src) {
-      document.getElementById('modal-image').src = src;
-      document.getElementById('image-modal').classList.remove('hidden');
-    }
-    
-    function closeImageModal() {
-      document.getElementById('image-modal').classList.add('hidden');
-    }
-    
-    // ============================================
-    // 🔔 Notification Functions
-    // ============================================
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      
-      const colors = {
-        success: 'bg-green-500',
-        error: 'bg-red-500',
-        info: 'bg-blue-500',
-        warning: 'bg-yellow-500'
-      };
-      
-      const icons = {
-        success: '✅',
-        error: '❌',
-        info: 'ℹ️',
-        warning: '⚠️'
-      };
-      
-      toast.className = `toast ${colors[type]} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 min-w-[250px]`;
-      toast.innerHTML = `<span>${icons[type]}</span><span>${message}</span>`;
-      
-      container.appendChild(toast);
-      
-      setTimeout(() => toast.classList.add('show'), 10);
-      
-      setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-    }
-    
-    function playNotificationSound() {
-      // Simple beep using Web Audio API
-      try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = 800;
-        oscillator.type = 'sine';
-        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-        
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.3);
-      } catch (e) {
-        // Silently fail if audio is not supported
-      }
-    }
-    
-    // ============================================
-    // 🎨 Status Config Helper
-    // ============================================
-    function getStatusConfig(status) {
-      const configs = {
-        pending: {
-          label: 
+            <div class="bg-gray-50
